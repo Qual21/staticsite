@@ -1,6 +1,6 @@
 from textnode import *
 from htmlnode import *
-
+import re
 
 def text_node_to_html_node(text_node):
     if text_node.text_type == TextType.TEXT.value:                                         #plain text
@@ -40,28 +40,97 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 if part:  # Only create node if part is not empty
                     new_nodes.append(TextNode(part, text_type))    
 
-    return new_nodes    
+    return new_nodes
+
+def split_nodes_image(old_nodes):
+    if not isinstance(old_nodes, list):
+        old_nodes = [old_nodes]
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT.value:
+            new_nodes.append(node)
+            continue
+
+        text = node.text
+        extracted = extract_markdown_images(node.text)
+        #pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)"
+        
+        if len(extracted) == 0:
+            new_nodes.append(node)
+            continue
+
+        for extract in extracted:
+            sections = text.split(f"![{extract[0]}]({extract[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("image not closed")
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(
+                TextNode(extract[0], TextType.IMAGE, extract[1]))
+            text = sections[1]
+        if text != "":
+            new_nodes.append(TextNode(text, TextType.TEXT))
+    
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    if not isinstance(old_nodes, list):
+        old_nodes = [old_nodes]
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT.value:
+            new_nodes.append(node)
+            continue
+
+        text = node.text
+        extracted = extract_markdown_links(node.text)
+        #pattern = r"\[([^\]]+)\]\((http[^\)]+)\)"
+        
+        if len(extracted) == 0:
+            new_nodes.append(node)
+            continue
+
+        for extract in extracted:
+            sections = text.split(f"[{extract[0]}]({extract[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("link not closed")
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(extract[0], TextType.LINK, extract[1]))
+            text = sections[1]
+        if text != "":
+            new_nodes.append(TextNode(text, TextType.TEXT))
+    
+    return new_nodes
+
+def text_to_textnodes(text):
+    pictured = split_nodes_image(TextNode(text, TextType.TEXT))
+    linked = split_nodes_link(pictured)
+    bold = split_nodes_delimiter(linked, "**", TextType.BOLD)
+    italian = split_nodes_delimiter(bold, "*", TextType.ITALIC)
+    coded = split_nodes_delimiter(italian, "`", TextType.CODE)
 
 
+    return coded
+
+
+
+def extract_markdown_images(text):
+    pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)"
+    matches = re.findall(pattern, text)
+
+    return matches
+
+def extract_markdown_links(text):
+    pattern =r"(?<!!)\[([^\]]+)\]\((http[^\)]+)\)"
+    matches = re.findall(pattern, text)
+
+    return matches
 
 
 def main():
-    test_nodes = [
-        TextNode("Regular text", TextType.TEXT),
-        TextNode("Bold text", TextType.BOLD),
-        TextNode("Italic text", TextType.ITALIC),
-        TextNode("Code block", TextType.CODE),
-        TextNode("Link text", TextType.LINK, "https://example.com"),
-        TextNode("Image description", TextType.IMAGE, "https://example.com/image.jpg")
-    ]
-    
-    for node in test_nodes:
-        try:
-            html_node = text_node_to_html_node(node)
-            print(f"Input: {node}")
-            print(f"Output HTML: {html_node.to_html()}\n")
-        except Exception as e:
-            print(f"Error converting node {node}: {str(e)}\n")
+    test_text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+    print(text_to_textnodes(test_text))
     
 
 if __name__ == "__main__":
