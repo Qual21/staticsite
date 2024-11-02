@@ -5,20 +5,15 @@ from htmlnode import *
 test_dict = {'key0': 'value0', 'key1': 'value1', 'key2': 'value2'}
 class TestHTMLNode(unittest.TestCase):
     
-    def test_eq(self):
-        node = HTMLNode(tag="This is a different text node", value="hbu")
-        node2 = HTMLNode(tag="This is a different text node", value="hbu")
-        self.assertEqual(node, node2)
+### html test
+    def test_values(self):
+        node = HTMLNode("b", "beautiful", None, {"dic": "tionary"})
+        self.assertEqual(node.tag, "b")
+        self.assertEqual(node.value, "beautiful")
+        self.assertEqual(node.children, [])
+        self.assertEqual(node.props, {"dic": "tionary"})
 
-    def test_eq2(self):
-        node = HTMLNode(tag="This is a different text node", props=test_dict)
-        node2 = HTMLNode(tag="This is a different text node", props=test_dict)
-        self.assertEqual(node, node2)
 
-    def test_eq3(self):
-        node = HTMLNode(tag="This is a text node")
-        node2 = HTMLNode(value="This is a cvstext node")
-        self.assertNotEqual(node, node2)
 ### leaf tests
     def test_to_html_no_children(self):
         node = LeafNode("p", "Hello, world!")

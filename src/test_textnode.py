@@ -16,7 +16,7 @@ class TestTextNode(unittest.TestCase):
 
     def test_eq3(self):
         node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a cvstext node", TextType.BOLD)
+        node2 = TextNode("This is a sdatext node", TextType.BOLD)
         self.assertNotEqual(node, node2)
         
 
