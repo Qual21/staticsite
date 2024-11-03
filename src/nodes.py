@@ -1,9 +1,9 @@
 from textnode import *
 from htmlnode import *
-from blocks import *
-from nodes import *
 import re
-'''
+
+
+
 def text_node_to_html_node(text_node):
     if text_node.text_type == TextType.TEXT.value:                                         #plain text
         return LeafNode(tag=None, value=text_node.text)
@@ -128,25 +128,3 @@ def extract_markdown_links(text):
     matches = re.findall(pattern, text)
 
     return matches
-'''
-
-def main():
-    '''
-    test_text = """This is the first block.
-
-                 This is the second block with many spaces.                                
-    
-                
-
-    This is the third block"""
-
-    f = open("./src/frankenstein.txt", "r")
-    text = f.read()
-    
-    paragraphs = (markdown_to_blocks(text))
-    
-    for i, paragraph in enumerate(paragraphs[:20], 1):  # Show first 5 paragraphs
-        print(f"Paragraph {i}:\n{paragraph}\n")'''
-
-if __name__ == "__main__":
-    main()
