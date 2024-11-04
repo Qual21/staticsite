@@ -135,3 +135,21 @@ def markdown_to_html_node(markdown):
 
 
     return ''.join(new_blocks)
+
+
+
+#```1. You will rejoice to hear **that** no disaster has accompanied the
+#2. commencement of an enterprise which you have regarded with such evil```
+
+test = """
+####banana orange car
+uhyvgbuhbn
+
+line one **thick** boy
+line two *italian* gal
+
+1. Hello, my darling
+2. Hello, my ```baby```
+3. Hello darkness my old friend """
+
+#print(markdown_to_html_node(test))

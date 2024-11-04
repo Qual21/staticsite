@@ -111,20 +111,27 @@ def text_to_textnodes(text):
     bold = split_nodes_delimiter(linked, "**", TextType.BOLD)
     italian = split_nodes_delimiter(bold, "*", TextType.ITALIC)
     coded = split_nodes_delimiter(italian, "`", TextType.CODE)
-
-
     return coded
+
+#def text_to_textnodes(text):
+ #   nodes = [TextNode(text, TextType.TEXT)]
+  #  nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+   # nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    #nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+#    nodes = split_nodes_image(nodes)
+ #   nodes = split_nodes_link(nodes)
+  #  return nodes
 
 
 
 def extract_markdown_images(text):
-    pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)"
+    pattern = r"!\[([^\]]+)\]\(([^\)]+)\)"   #pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)", original with http
     matches = re.findall(pattern, text)
 
     return matches
 
 def extract_markdown_links(text):
-    pattern =r"(?<!!)\[([^\]]+)\]\((http[^\)]+)\)"
+    pattern =r"(?<!!)\[([^\]]+)\]\(([^\)]+)\)" #pattern =r"(?<!!)\[([^\]]+)\]\((http[^\)]+)\)"
     matches = re.findall(pattern, text)
 
     return matches
