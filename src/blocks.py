@@ -117,35 +117,21 @@ def markdown_to_html_node(markdown):
                 for tnode in tnodes:
                     hnodes.append(text_node_to_html_node(tnode).to_html())
                 plain_temp.append(f"{''.join(hnodes)}")
-            nblocks.append(f"<blockquote>{''.join(plain_temp)}</blockquote>")
+            nblocks.append(f"<p>{''.join(plain_temp)}</p>")
 
         if block_type == "heading":
-            pass
+            hashes = 0
+            for char in block:
+                if char == "#":
+                    hashes += 1
+                else:
+                    break
+            if hashes > 6: hashes = 6
+            nblocks.append(f"<h{hashes}>{block[hashes:].strip()}</h{hashes}>")
 
 
         new_blocks.append(f"{''.join(nblocks)}")
     
 
 
-    return new_blocks
-
-
-
-
-
-    
-
-#```1. You will rejoice to hear **that** no disaster has accompanied the
-#2. commencement of an enterprise which you have regarded with such evil```
-
-test = """
-
-
-line one **thick** boy
-line two *italian* gal
-
-1. Hello, my darling
-2. Hello, my ```baby```
-3. Hello darkness my old friend """
-
-print(markdown_to_html_node(test))
+    return ''.join(new_blocks)

@@ -3,150 +3,39 @@ from htmlnode import *
 from blocks import *
 from nodes import *
 import re
-'''
-def text_node_to_html_node(text_node):
-    if text_node.text_type == TextType.TEXT.value:                                         #plain text
-        return LeafNode(tag=None, value=text_node.text)
-    elif text_node.text_type == TextType.BOLD.value:                                       #bold
-        return LeafNode(tag="b", value=text_node.text)
-    elif text_node.text_type == TextType.ITALIC.value:                                     #italic
-        return LeafNode(tag="i", value=text_node.text)
-    elif text_node.text_type == TextType.CODE.value:                                       #code
-        return LeafNode(tag="code", value=text_node.text)
-    elif text_node.text_type == TextType.LINK.value:                                       #link
-        return LeafNode(tag="a", value=text_node.text, props={"href":text_node.url})
-    elif text_node.text_type == TextType.IMAGE.value:                                      #image
-        return LeafNode(tag="img", value="", props={"src": text_node.url, "alt": text_node.text})
-    else:
-        raise ValueError("Unsupported text type")
+import os
+import shutil
 
-def split_nodes_delimiter(old_nodes, delimiter, text_type):
-    if not isinstance(old_nodes, list):
-        old_nodes = [old_nodes]
-    new_nodes = []
-    for node in old_nodes:
-        if node.text_type != TextType.TEXT.value:
-            new_nodes.append(node)
-            continue
-        
-        parts = node.text.split(delimiter)
-
-        if len(parts) == 1:
-            new_nodes.append(node)
-            continue
-        for i, part in enumerate(parts):
-            if not (i & 1):     # Even
-                if part:  # Only create node if part is not empty
-                    new_nodes.append(TextNode(part, TextType.TEXT))
-            else:               # Odd 
-                if part:  # Only create node if part is not empty
-                    new_nodes.append(TextNode(part, text_type))    
-
-    return new_nodes
-
-def split_nodes_image(old_nodes):
-    if not isinstance(old_nodes, list):
-        old_nodes = [old_nodes]
-    new_nodes = []
-    for node in old_nodes:
-        if node.text_type != TextType.TEXT.value:
-            new_nodes.append(node)
-            continue
-
-        text = node.text
-        extracted = extract_markdown_images(node.text)
-        #pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)"
-        
-        if len(extracted) == 0:
-            new_nodes.append(node)
-            continue
-
-        for extract in extracted:
-            sections = text.split(f"![{extract[0]}]({extract[1]})", 1)
-            if len(sections) != 2:
-                raise ValueError("image not closed")
-            if sections[0] != "":
-                new_nodes.append(TextNode(sections[0], TextType.TEXT))
-            new_nodes.append(
-                TextNode(extract[0], TextType.IMAGE, extract[1]))
-            text = sections[1]
-        if text != "":
-            new_nodes.append(TextNode(text, TextType.TEXT))
+def clean_and_move_folders(sender, receiver):
+    if not os.path.exists(sender):
+        raise ValueError("No sender directory")
     
-    return new_nodes
+    if os.path.exists(receiver):
+        shutil.rmtree(receiver)  # Remove all contents in receiving folder
+    os.makedirs(receiver, exist_ok=True)
 
-def split_nodes_link(old_nodes):
-    if not isinstance(old_nodes, list):
-        old_nodes = [old_nodes]
-    new_nodes = []
-    for node in old_nodes:
-        if node.text_type != TextType.TEXT.value:
-            new_nodes.append(node)
-            continue
-
-        text = node.text
-        extracted = extract_markdown_links(node.text)
-        #pattern = r"\[([^\]]+)\]\((http[^\)]+)\)"
-        
-        if len(extracted) == 0:
-            new_nodes.append(node)
-            continue
-
-        for extract in extracted:
-            sections = text.split(f"[{extract[0]}]({extract[1]})", 1)
-            if len(sections) != 2:
-                raise ValueError("link not closed")
-            if sections[0] != "":
-                new_nodes.append(TextNode(sections[0], TextType.TEXT))
-            new_nodes.append(TextNode(extract[0], TextType.LINK, extract[1]))
-            text = sections[1]
-        if text != "":
-            new_nodes.append(TextNode(text, TextType.TEXT))
-    
-    return new_nodes
-
-def text_to_textnodes(text):
-    pictured = split_nodes_image(TextNode(text, TextType.TEXT))
-    linked = split_nodes_link(pictured)
-    bold = split_nodes_delimiter(linked, "**", TextType.BOLD)
-    italian = split_nodes_delimiter(bold, "*", TextType.ITALIC)
-    coded = split_nodes_delimiter(italian, "`", TextType.CODE)
+    recursive_copy(sender, receiver)
 
 
-    return coded
+def recursive_copy(current_sender, current_receiver):
+    for item in os.listdir(current_sender):
+        source_path = os.path.join(current_sender, item)
+        target_path = os.path.join(current_receiver, item)
 
-
-
-def extract_markdown_images(text):
-    pattern = r"!\[([^\]]+)\]\((http[^\)]+)\)"
-    matches = re.findall(pattern, text)
-
-    return matches
-
-def extract_markdown_links(text):
-    pattern =r"(?<!!)\[([^\]]+)\]\((http[^\)]+)\)"
-    matches = re.findall(pattern, text)
-
-    return matches
-'''
+        if os.path.isdir(source_path): # Create the corresponding directory in the receiver and recurse
+            os.makedirs(target_path, exist_ok=True)
+            recursive_copy(source_path, target_path)
+        else: # If it's a file, copy it directly to the receiver
+            print(shutil.copy2(source_path, target_path))
+            shutil.copy2(source_path, target_path)
 
 def main():
-    '''
-    test_text = """This is the first block.
+    script_dir = os.path.dirname(__file__)  # gets the src directory
+    project_root = os.path.dirname(script_dir)  # gets the parent (root) directory
+    static_dir = os.path.join(project_root, "static")
+    public_dir = os.path.join(project_root, "public")    
 
-                 This is the second block with many spaces.                                
-    
-                
-
-    This is the third block"""
-
-    f = open("./src/frankenstein.txt", "r")
-    text = f.read()
-    
-    paragraphs = (markdown_to_blocks(text))
-    
-    for i, paragraph in enumerate(paragraphs[:20], 1):  # Show first 5 paragraphs
-        print(f"Paragraph {i}:\n{paragraph}\n")'''
+    clean_and_move_folders(static_dir, public_dir)
 
 if __name__ == "__main__":
     main()
